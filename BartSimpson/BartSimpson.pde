@@ -9,9 +9,11 @@ color shirtColor = #f92114;
 color skinColor = #fabd14;
 color borderColor = #000000;
 int stroke = 1;
+boolean helpToggle = false;
 
 void setup() {
   strokeWeight(stroke);
+  frameRate(60);
   surface.setSize(gridSize * gridX, gridSize * gridY);
   for (int r = 0; r < gridX; r++) {
     for (int c = 0; c < gridY; c++) {
@@ -27,16 +29,42 @@ void setup() {
 }
 
 void draw() {
-  drawPupils(mouseX, mouseY);
+  if (helpToggle) {
+    showHelp();
+  } else {
+    drawPupils(mouseX, mouseY);
 
-
-  for (int r = 0; r < gridX; r++) {
-    for (int c = 0; c < gridY; c++) {
-      color curColor = colors[r][c];
-      fill(curColor);
-      rect(r * gridSize, c * gridSize, gridSize, gridSize);
+    for (int r = 0; r < gridX; r++) {
+      for (int c = 0; c < gridY; c++) {
+        color curColor = colors[r][c];
+        fill(curColor);
+        rect(r * gridSize, c * gridSize, gridSize, gridSize);
+      }
     }
   }
+}
+void redrawAll() {
+  surface.setSize(gridSize * gridX, gridSize * gridY);
+  for (int r = 0; r < gridX; r++) {
+    for (int c = 0; c < gridY; c++) {
+      colors[r][c] = bgColor;
+    }
+  }
+  colorSkin();
+  colorEyes();
+  colorShirt();
+  colorBorder();
+}
+
+void blink(boolean add) {
+  int[][] blinkFill = { {11, 12, 13, 14, 16, 17, 18, 19}};
+  color c;
+  if (add) {
+    c = skinColor;
+  } else {
+    c = #ffffff;
+  }
+  colors = fillColor(blinkFill, c, 12);
 }
 
 void mouseWheel(MouseEvent event) {
@@ -53,39 +81,39 @@ void mouseWheel(MouseEvent event) {
 }
 
 void mousePressed() {
-  shrugUp();
+  shrug(true);
   if (mouseButton == LEFT) {
     shirtColor = getRandomColor();
   } else {
     shirtColor = #f92114;
   }
   colorMouth();
+  blink(true);
 }
 
 void mouseReleased() {
   delay(100);
-  shrugDown();
+  shrug(false);
   resetMouth();
+  blink(false);
 }
 
-void shrugUp() {
+void shrug(boolean add) {
   int[][] shoulder = {{1, 2, 3}, {0, 4}, {0, 4}, {0, 4}};
   int[][] sleeve = {{1, 2, 3}};
-
-  colors = fillColor(shoulder, borderColor, 27); 
-  colors = fillColor(sleeve, shirtColor, 28);
-}
-
-void shrugDown() {
-  int[][] shoulder = {{1, 2, 3}, {0, 4}, {0, 4}, {0, 4}};
-  colors[1][27] = bgColor;
-  colors[0][28] = bgColor;
-  colors = fillColor(shoulder, borderColor, 28);
-  colorShirt();
+  if (add) {
+    fillColor(shoulder, borderColor, 27);
+    fillColor(sleeve, shirtColor, 28);
+  } else {
+    colors[1][27] = bgColor;
+    colors[0][28] = bgColor;
+    fillColor(shoulder, borderColor, 28);
+    colorShirt();
+  }
 }
 
 void drawPupils(int x, int y) {
-  colorEyes();
+  resetEyes();
   color c = #000000;
 
   if ( x <= width / 2 && y <= height / 2) {
@@ -113,14 +141,19 @@ void colorBorder() {
     {4, 9, 16, 17, 18, 19, 20}, {4, 5, 9, 16, 20}, {3, 6, 10, 15, 20}, {3, 5, 11, 12, 13, 14, 17, 18, 19}, {4, 6, 19}, {5, 9, 20}, {5, 8, 9, 10, 20}, 
     {5, 11, 12, 13, 14, 15, 16, 17, 18, 19}, {5, 15}, {5, 13, 14}, {4, 5, 12}, {3, 6, 10, 11, 12}, {2, 7, 8, 9, 13}, {1, 2, 3, 13}, {0, 4, 13, 14}, {0, 4, 14}, {0, 4, 14, 15}
   };
-  colors = fillColor( borderFill, borderColor, 0);
+  fillColor( borderFill, borderColor, 0);
 }
 
 void colorEyes() {
   int[][] eyeFill = {
     {11, 12, 13, 14, 16, 17, 18, 19}, {10, 11, 12, 13, 14, 16, 17, 18, 19}, {10, 11, 12, 13, 14, 15, 17, 18, 19}, {10, 11, 12, 13, 14, 15, 16}, {10, 11, 12, 13, 14, 15}, {11, 12, 13, 14}
   };
-  colors = fillColor( eyeFill, #ffffff, 12);
+  fillColor( eyeFill, #ffffff, 12);
+}
+
+void resetEyes() {
+  int[][] eyeFill = {{17, 18}, {12, 13}, {12, 13}};
+  fillColor(eyeFill, #ffffff, 13);
 }
 
 void colorSkin() {
@@ -141,14 +174,14 @@ void colorSkin() {
     {15}, {10, 12, 14, 15}, {6}, {2, 4}, {2, 3}, {2, 3}, {3}, {3}, {}, {17}, {}, {}, {}, {}, {}, {17, 18, 19}, {17, 18, 19}, {}, {17, 18}, {15, 16, 17, 18, 19}, {15, 16, 17, 18, 19}, 
     {}, {}, {}, {5, 6, 7, 8, 9, 10, 11}, {7, 8, 9}
   };
-  colors = fillColor( skinFill, skinColor, 1);
+  fillColor( skinFill, skinColor, 1);
 }
 
 void colorShirt() {
   int[][] shirtFill = {
     {4, 5}, {3, 4, 5, 6, 10, 11, 12}, {4, 5, 6, 7, 8, 9, 10, 11, 12}, {1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12}, {1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13}, {1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13}
   };
-  colors = fillColor( shirtFill, shirtColor, 26);
+  fillColor( shirtFill, shirtColor, 26);
 }
 
 
@@ -179,4 +212,48 @@ color[][] fillColor(int[][] pixels, color c, int rowOffset) {
 
 color getRandomColor() {
   return color(int(random(255)), int(random(255)), int(random(255)));
+}
+
+void keyPressed() {
+  int maxSize = 1080/gridSize;
+  if (key == '=' ) {
+    gridSize += 1;
+  } else if (key == '-') {
+    gridSize -= 1;
+  }
+  if (gridSize < 2) {
+    gridSize = 2;
+  } else  if (gridSize > maxSize) {
+    gridSize = maxSize + 1;
+  }
+  surface.setSize(gridSize * gridX, gridSize * gridY);
+
+  if (key =='c' || key == 'C') {
+    bgColor = getRandomColor();
+    redrawAll();
+  } else  if (key == 'z' || key == 'Z') {
+    bgColor = #668baa;
+    redrawAll();
+  } else  if (key =='s' || key =='S') {
+    shirtColor = getRandomColor();
+    colorShirt();
+  } else if (key == '?') {
+    helpToggle = !helpToggle;
+  }
+}
+
+void showHelp() {
+  fill(#ffffff);
+  rect(0, 0, gridX * gridSize, gridY * gridSize);
+  fill(#000000);
+  textSize(32);
+  text("Help:", 10, 30);
+  
+  textSize(20);
+  String[] textLines = {"= : Enlarge size of grid by 1", "- : Decrease size of grid by 1", "c : Randomly change color of background", "z : reset background",
+  "s : Randomly change color of shirt", "LMouse : Interact and change shirt", "RMouse: Interact and reset shirt", "? : Toggle this help page",};
+  for (int i = 0; i < textLines.length; i++) {
+    text(textLines[i], 10, 60 + 30*i);
+  }
+
 }
